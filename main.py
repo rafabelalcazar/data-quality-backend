@@ -54,7 +54,7 @@ async def upload_dataset(file: UploadFile = File(...)):
             print('path: ',path)
             data = pd.read_csv(path, encoding='latin1')
             print(data.head())
-            data = data.fillna(0)
+            # data = data.fillna(0)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error processing the file: {e}")
         # data = pd.read_csv(contents)
@@ -63,11 +63,30 @@ async def upload_dataset(file: UploadFile = File(...)):
 
     # Process the DataFrame (example: calculate descriptive statistics)
     try:
-        stats = data.describe().to_dict()
+        # stats = data.describe().to_dict()
+        instances = data.shape[0]
+        features = data.shape[1]
+        
+        missing_values = data.isnull().sum()
+        print(missing_values)
+        missing_values_percentage= missing_values.sum()/data.size
+        
+        duplicate_rows = data.duplicated().sum()
+        duplicate_rows_percentage = (duplicate_rows / instances) * 100
+        
+        result = {
+            "instances": instances,
+            "features": features,
+            "missing_values": missing_values.to_dict(),
+            "missing_values_percentage": missing_values_percentage,
+            "duplicate_rows": int(duplicate_rows),
+            "duplicate_rows_percentage": duplicate_rows_percentage
+        }
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing the data: {e}")
 
-    return JSONResponse(content=stats)
+    return JSONResponse(content=result)
 
 # To run the server, use the following command:
 # uvicorn main:app --reload
