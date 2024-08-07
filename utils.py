@@ -68,7 +68,7 @@ def process_categorical_attribute(column_data):
         "unique_values": column_data.nunique(),
         "entropy": float(calculate_entropy(column_data)),
         # "mode": column_data.mode().values[0],
-        # "imbalance_ratio": calculate_imbalance_ratio(column_data),
+        "imbalance_ratio": float(calculate_imbalance_ratio(column_data))
         # "mode_frequency": column_data.mode().value_counts().values[0],
     }
     
@@ -99,9 +99,10 @@ def calculate_imbalance_ratio(column):
     float: The imbalance ratio value.
     """
     # Get the unique values and their counts
-    unique_values, value_counts = np.unique(column, return_counts=True)
+    # unique_values, value_counts = np.unique(column, return_counts=True)
+    frequencies = column.value_counts(normalize=True)
     
     # Calculate the imbalance ratio
-    imbalance_ratio = np.max(value_counts) / np.sum(value_counts)
+    imbalance_ratio = np.max(frequencies) / np.sum(frequencies)
     
     return imbalance_ratio
