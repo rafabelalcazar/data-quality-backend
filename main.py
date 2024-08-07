@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 import pandas as pd
 from typing import Dict
 from fastapi.middleware.cors import CORSMiddleware
+from utils import get_dataset_info, get_columns_stats
 
 app = FastAPI()
 
@@ -63,30 +64,21 @@ async def upload_dataset(file: UploadFile = File(...)):
 
     # Process the DataFrame (example: calculate descriptive statistics)
     try:
-        # stats = data.describe().to_dict()
-        instances = data.shape[0]
-        features = data.shape[1]
         
-        missing_values = data.isnull().sum()
-        print(missing_values)
-        missing_values_percentage= missing_values.sum()/data.size
+        result = get_dataset_info(data)
+        # print(result)
+        result_columns = get_columns_stats(data)
+        print(result_columns)
         
-        duplicate_rows = data.duplicated().sum()
-        duplicate_rows_percentage = (duplicate_rows / instances) * 100
-        
-        result = {
-            "instances": instances,
-            "features": features,
-            "missing_values": missing_values.to_dict(),
-            "missing_values_percentage": missing_values_percentage,
-            "duplicate_rows": int(duplicate_rows),
-            "duplicate_rows_percentage": duplicate_rows_percentage
+        response = {
+            "dataset_info": result,
+            "columns_stats": result_columns
         }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing the data: {e}")
 
-    return JSONResponse(content=result)
+    return JSONResponse(content=response)
 
 # To run the server, use the following command:
 # uvicorn main:app --reload
